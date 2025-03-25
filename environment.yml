@@ -1,0 +1,6 @@
+name: plasma-centrifuge-env
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - fenics-dolfinx
