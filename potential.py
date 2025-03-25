@@ -26,7 +26,7 @@ B0 = 0.13  # magnetic field
 mu = 1  # permeability
 viscosity = 3  # viscosity Pa s
 sigma = 700  # conductivity S/m
-sigma_perp = sigma
+sigma_perp = sigma / 4
 
 
 mesh = dolfinx.mesh.create_rectangle(
@@ -93,18 +93,17 @@ source_term = dolfinx.fem.Constant(mesh, -1.0)
 x = ufl.SpatialCoordinate(mesh)
 
 F = 0
+z, r = x[0], x[1]
 
 # potential
-F += sigma * dot(grad(phi), grad(phi_v)) * dx  # TODO make this cylindrical
-F += flux_left(r=x[1], mod=ufl) * phi_v * ds(2)
-F += flux_top(z=x[0], mod=ufl) * phi_v * ds(1)
-F += -B0 / x[1] * (x[1] * v_theta).dx(1) * phi_v * dx
+F += sigma * dot(grad(phi), grad(phi_v)) * r * dx  # TODO make this non-isotropic
+F += flux_left(r=r, mod=ufl) * phi_v * r * ds(2)
+F += flux_top(z=z, mod=ufl) * phi_v * r * ds(1)
+F += -B0 / r * (r * v_theta).dx(1) * phi_v * r * dx
 
 # velocity
-F += (
-    viscosity * dot(grad(v_theta), grad(v_theta_test)) * dx
-)  # TODO make this cylindrical
-F += -sigma_perp * B0 * (-phi.dx(1) + v_theta * B0) * v_theta_test * dx
+F += viscosity * dot(grad(v_theta), grad(v_theta_test)) * r * dx
+F += -sigma_perp * B0 * (-phi.dx(1) + v_theta * B0) * v_theta_test * r * dx
 
 
 # we constrain the annode to around -50 because the problem is ill-posed
