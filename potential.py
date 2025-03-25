@@ -124,9 +124,9 @@ z, r = x[0], x[1]
 sigma_tensor = ufl.as_tensor([[sigma / sigma_perp, 0], [0, 1]])
 
 F += inner(sigma_tensor * grad(phi), grad(phi_v)) * r * dx
-F += flux_left(r=r, mod=ufl) * phi_v * ds(2)
-F += flux_top(z=z, mod=ufl) * phi_v * ds(1)
-F += -sigma_perp * B0 / r * (r * v_theta).dx(1) * phi_v * r * dx
+F += -flux_left(r=r, mod=ufl) * phi_v * ds(2)
+F += -flux_top(z=z, mod=ufl) * phi_v * ds(1)
+F += -B0 / r * (r * v_theta).dx(1) * phi_v * r * dx
 
 # velocity
 F += viscosity * dot(grad(v_theta), grad(v_theta_test)) * r * dx
@@ -174,7 +174,7 @@ current_left = dolfinx.fem.assemble_scalar(
     dolfinx.fem.form(-sigma * potential.dx(0) * 2 * ufl.pi * r * ds(2))
 )
 current_top = dolfinx.fem.assemble_scalar(
-    dolfinx.fem.form(-sigma_perp * potential.dx(1) * 2 * ufl.pi * r * ds(1))
+    dolfinx.fem.form(sigma_perp * potential.dx(1) * 2 * ufl.pi * r * ds(1))
 )
 
 print(f"Expected current: {I}")
