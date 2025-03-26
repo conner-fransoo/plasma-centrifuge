@@ -18,12 +18,12 @@ import numpy as np
 
 
 R_0 = 6e-2
-R1 = R_0 * 0.05
+R1 = R_0 * 0.07
 c = 4 * R_0
 c_0 = c * 0.66
 I = 100  # total current
-B0 = 0.09  # magnetic field
-viscosity = 3e-5  # viscosity Pa s
+B0 = 0.13  # magnetic field
+viscosity = 6.8e-5  # viscosity Pa s
 sigma = 700  # conductivity Ohm-1 m-1
 beta_eff = 8
 voltage = 58.0  # V
