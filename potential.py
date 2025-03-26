@@ -17,14 +17,13 @@ from dolfinx.mesh import locate_entities_boundary, meshtags
 import numpy as np
 
 
-R_0 = 7.2
+R_0 = 6e-2
 R1 = R_0 * 0.05
 c = 4 * R_0
-c_0 = c * 0.7
+c_0 = c * 0.66
 I = 100  # total current
-B0 = 0.13  # magnetic field
-mu = 1  # permeability
-viscosity = 3  # viscosity Pa s
+B0 = 0.09  # magnetic field
+viscosity = 3e-5  # viscosity Pa s
 sigma = 700  # conductivity Ohm-1 m-1
 beta_eff = 8
 voltage = 58.0  # V
@@ -48,13 +47,13 @@ def hartmann_number(B0, R_0, sigma, mu):
     return B0 * R_0 * np.sqrt(sigma / mu)
 
 
-print(f"Hartmann number: {hartmann_number(B0, R_0, sigma, mu)}")
+print(f"Hartmann number: {hartmann_number(B0, R_0, sigma, viscosity)}")
 print(f"beta_eff: {beta_eff}")
 print(f"sigma: {sigma}")
 print(f"sigma_perp: {sigma_perp}")
 
 mesh = dolfinx.mesh.create_rectangle(
-    MPI.COMM_WORLD, [np.array([0.0, 0.0]), np.array([c, R_0])], [250, 200]
+    MPI.COMM_WORLD, [np.array([0.0, 0.0]), np.array([c, R_0])], [150, 200]
 )
 
 
@@ -113,20 +112,18 @@ u = Function(V)
 phi, v_theta = ufl.split(u)
 phi_v, v_theta_test = TestFunctions(V)
 
-source_term = dolfinx.fem.Constant(mesh, -1.0)
-
 x = ufl.SpatialCoordinate(mesh)
 
 F = 0
 z, r = x[0], x[1]
 
 # potential
-sigma_tensor = ufl.as_tensor([[sigma / sigma_perp, 0], [0, 1]])
+sigma_tensor = ufl.as_tensor([[sigma, 0], [0, sigma_perp]])
 
 F += inner(sigma_tensor * grad(phi), grad(phi_v)) * r * dx
-F += -flux_left(r=r, mod=ufl) * phi_v * ds(2)
-F += -flux_top(z=z, mod=ufl) * phi_v * ds(1)
-F += -B0 / r * (r * v_theta).dx(1) * phi_v * r * dx
+F += -flux_left(r=r, mod=ufl) * phi_v * r * ds(2)
+F += -flux_top(z=z, mod=ufl) * phi_v * r * ds(1)
+F += -sigma_perp * B0 / r * (r * v_theta).dx(1) * phi_v * r * dx
 
 # velocity
 F += viscosity * dot(grad(v_theta), grad(v_theta_test)) * r * dx
